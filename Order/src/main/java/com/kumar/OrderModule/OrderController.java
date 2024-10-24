@@ -25,19 +25,22 @@ public class OrderController {
         OrderResponse response = new OrderResponse(message, orders);
         return ResponseEntity.ok(response);
     }
-
-    @PostMapping
-    public Orders createOrder(@RequestBody Orders order) {
-        return orderRepository.save(order);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Orders> getOrderById(@PathVariable Long id) {
-        return orderRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
+@PostMapping
+public ResponseEntity<OrderResponse> createOrder(@RequestBody Orders order) {
+    Orders savedOrder = orderRepository.save(order);
+    String message = "Order created successfully. ID: " + savedOrder.getId();
+    OrderResponse response = new OrderResponse(message, savedOrder);
+    return ResponseEntity.ok(response);
+}
+@GetMapping("/{id}")
+public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
+    return orderRepository.findById(id)
+            .map(order -> {
+                OrderResponse response = new OrderResponse("Order retrieved successfully.", order);
+                return ResponseEntity.ok(response);
+            })
+            .orElse(ResponseEntity.ok(new OrderResponse("Order not found with ID: " + id)));
+}
     @PutMapping("/{id}")
     public ResponseEntity<OrderResponse> updateOrder(@PathVariable Long id, @RequestBody Orders orderDetails) {
         return orderRepository.findById(id)
@@ -53,17 +56,20 @@ public class OrderController {
                     OrderResponse response = new OrderResponse("Order updated successfully. Order ID: " + updatedOrder.getId());
 
                     return ResponseEntity.ok(response);
-                }).orElse(ResponseEntity.ok(new OrderResponse("Order not found with ID: " + id, null)));
+                }).orElse(ResponseEntity.ok(new OrderResponse("Order not found with ID: " + id)));
     }
-
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        if (orderRepository.existsById(id)) {
-            orderRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
+@DeleteMapping("/{id}")
+public ResponseEntity<OrderResponse> deleteOrder(@PathVariable Long id) {
+    return orderRepository.findById(id)
+            .map(order -> {
+                // Store order details before deletion
+                Orders deletedOrder = order;
+                // Delete the order
+                orderRepository.deleteById(id);
+                // Return success message along with deleted order details
+                OrderResponse response = new OrderResponse("Order deleted successfully. ID: " + id, deletedOrder);
+                return ResponseEntity.ok(response);
+            })
+            .orElse(ResponseEntity.ok(new OrderResponse("Order not found with ID: " + id)));
+}
 }

@@ -11,7 +11,7 @@ import java.util.List;
 @RequestMapping("/products")
 public class ProductController {
     @Autowired
-    private  ProductRepository productRepository;
+    private ProductRepository productRepository;
 
     //Get all product
     @GetMapping
@@ -27,19 +27,23 @@ public class ProductController {
         ProductResponse response = new ProductResponse(message, orders);
         return ResponseEntity.ok(response);
     }
-    //create a product
-    @PostMapping
-    public  Product createProduct(@RequestBody Product product){
-        return productRepository.save(product);
-    }
 
+// Create a product
+@PostMapping
+public ResponseEntity<ProductResponse> createProduct(@RequestBody Product product) {
+    Product savedProduct = productRepository.save(product);
+    String message = "Product created successfully. Product ID: " + savedProduct.getId();
+    ProductResponse response = new ProductResponse(message, savedProduct);
+    return ResponseEntity.ok(response);
+}
     //Get product by id
     @GetMapping("/{id}")
-    public ResponseEntity<Product>getProductById(@PathVariable Long id){
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         return productRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
     // Update a product
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
@@ -52,17 +56,21 @@ public class ProductController {
                     Product updatedProduct = productRepository.save(product);
 
                     // Create a response with the updated product
-                    ProductResponse response = new ProductResponse("Product updated successfully. Product ID: " +updatedProduct.getId());
+                    ProductResponse response = new ProductResponse("Product updated successfully. Product ID: " + updatedProduct.getId(),updatedProduct);
                     return ResponseEntity.ok(response);
-                }).orElse(ResponseEntity.ok(new ProductResponse("Product not found with ID: " + id, null)));
+                }).orElse(ResponseEntity.ok(new ProductResponse("Product not found with ID: " + id)));
     }
-
+    // Delete a product
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ProductResponse> deleteProduct(@PathVariable Long id) {
+        return productRepository.findById(id)
+                .map(product -> {
+                    // Store product details before deletion
+                    Product deletedProduct = product;
+                    productRepository.deleteById(id);
+                    ProductResponse response = new ProductResponse("Product deleted successfully. ID: " + id, deletedProduct);
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.ok(new ProductResponse("Product not found with ID: " + id)));
     }
 }

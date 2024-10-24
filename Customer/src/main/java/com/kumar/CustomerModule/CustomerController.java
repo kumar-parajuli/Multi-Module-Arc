@@ -14,7 +14,7 @@ public class CustomerController {
     private CustomerRepository customerRepository;
 
     @GetMapping
-    public ResponseEntity<CustomerResponse>getAllCustomer() {
+    public ResponseEntity<CustomerResponse> getAllCustomer() {
         List<Customer> customers = customerRepository.findAll();
         String message;
         if (customers.isEmpty()) {
@@ -22,40 +22,55 @@ public class CustomerController {
         } else {
             message = "Customer retrived successfully. Total:" + customers.size();
         }
-        CustomerResponse response= new CustomerResponse(message,customers);
-        return  ResponseEntity.ok(response);
+        CustomerResponse response = new CustomerResponse(message, customers);
+        return ResponseEntity.ok(response);
     }
+
     @PostMapping
-    public ResponseEntity<String> createCustomer(@RequestBody Customer customer) {
-         customerRepository.save(customer);
-        return ResponseEntity.ok("Customer created successfully");
+    public ResponseEntity<CustomerResponse> createCustomer(@RequestBody Customer customer) {
+        Customer savedCustomer = customerRepository.save(customer);
+        String message = "Customer created successfully. ID: " + savedCustomer.getId();
+        CustomerResponse response = new CustomerResponse(message, savedCustomer);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getCustomerById(@PathVariable Long id) {
+    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
         return customerRepository.findById(id)
-                .map(customer -> ResponseEntity.ok("Customer retrieved successfully. Name: " + customer.getName() + ", Email: " + customer.getEmail()))
-                .orElse(ResponseEntity.ok("Customer not found with ID: " + id));
+                .map(customer -> {
+                    // Create a CustomerResponse with the customer details
+                    CustomerResponse response = new CustomerResponse("Customer retrieved successfully.", customer);
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {
         return customerRepository.findById(id)
                 .map(customer -> {
+                    // Update customer details
                     customer.setName(customerDetails.getName());
                     customer.setEmail(customerDetails.getEmail());
+
+                    // Save the updated customer
                     Customer updatedCustomer = customerRepository.save(customer);
-                    CustomerResponse response = new CustomerResponse("Customer updated successfully. Customer ID:" +updatedCustomer.getId());
+
+                    // Create response with the updated customer details
+                    CustomerResponse response = new CustomerResponse("Customer updated successfully. Customer ID: " + updatedCustomer.getId(), updatedCustomer);
+
                     return ResponseEntity.ok(response);
                 }).orElse(ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCustomer(@PathVariable Long id) {
+    public ResponseEntity<CustomerResponse> deleteCustomer(@PathVariable Long id) {
         if (customerRepository.existsById(id)) {
             customerRepository.deleteById(id);
-            return ResponseEntity.ok("Customer deleted successfully.");
+            // Return a response with a success message
+            return ResponseEntity.ok(new CustomerResponse("Customer deleted successfully. ID: " + id));
         }
-        return ResponseEntity.ok("Customer not found with ID: " + id);
+        // Return a response with a not found message
+        return ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id));
     }
 }
