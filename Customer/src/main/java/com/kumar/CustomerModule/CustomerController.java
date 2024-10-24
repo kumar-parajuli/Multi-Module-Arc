@@ -12,44 +12,45 @@ import java.util.List;
 public class CustomerController {
     @Autowired
     private CustomerRepository customerRepository;
-    @GetMapping
-    public List<Customer> getAllCustomer() {
-        return customerRepository.findAll();
-    }
-//
-//    @GetMapping
-//    public List<Customer> getAllCustomer(@RequestBody Customer customer){
-//        return  customerRepository.findAll();
-//    }
 
+    @GetMapping
+    public ResponseEntity<String>getAllCustomer() {
+        List<Customer> customers=customerRepository.findAll();
+        if(customers.isEmpty()){
+            return  ResponseEntity.ok("No customers found");
+        }
+        return ResponseEntity.ok("Customer retrived successfully. Total:"+ customers.size());
+    }
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
-        return customerRepository.save(customer);
+    public ResponseEntity<String> createCustomer(@RequestBody Customer customer) {
+         customerRepository.save(customer);
+        return ResponseEntity.ok("Customer created successfully");
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
+    public ResponseEntity<String> getCustomerById(@PathVariable Long id) {
         return customerRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(customer -> ResponseEntity.ok("Customer retrieved successfully. Name: " + customer.getName() + ", Email: " + customer.getEmail()))
+                .orElse(ResponseEntity.ok("Customer not found with ID: " + id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {
+    public ResponseEntity<String> updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {
         return customerRepository.findById(id)
                 .map(customer -> {
                     customer.setName(customerDetails.getName());
                     customer.setEmail(customerDetails.getEmail());
-                    return ResponseEntity.ok(customerRepository.save(customer));
-                }).orElse(ResponseEntity.notFound().build());
+                    customerRepository.save(customer);
+                    return ResponseEntity.ok("Customer updated successfully.");
+                }).orElse(ResponseEntity.ok("Customer not found with ID: " + id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+    public ResponseEntity<String> deleteCustomer(@PathVariable Long id) {
         if (customerRepository.existsById(id)) {
             customerRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Customer deleted successfully.");
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok("Customer not found with ID: " + id);
     }
 }

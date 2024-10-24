@@ -14,6 +14,7 @@ public class OrderController {
 
     @GetMapping
     public List<Orders> getAllOrders() {
+
         return orderRepository.findAll();
     }
 
