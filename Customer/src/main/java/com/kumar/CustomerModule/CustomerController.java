@@ -14,12 +14,16 @@ public class CustomerController {
     private CustomerRepository customerRepository;
 
     @GetMapping
-    public ResponseEntity<String>getAllCustomer() {
-        List<Customer> customers=customerRepository.findAll();
-        if(customers.isEmpty()){
-            return  ResponseEntity.ok("No customers found");
+    public ResponseEntity<CustomerResponse>getAllCustomer() {
+        List<Customer> customers = customerRepository.findAll();
+        String message;
+        if (customers.isEmpty()) {
+            message = "No customers found";
+        } else {
+            message = "Customer retrived successfully. Total:" + customers.size();
         }
-        return ResponseEntity.ok("Customer retrived successfully. Total:"+ customers.size());
+        CustomerResponse response= new CustomerResponse(message,customers);
+        return  ResponseEntity.ok(response);
     }
     @PostMapping
     public ResponseEntity<String> createCustomer(@RequestBody Customer customer) {
@@ -35,14 +39,15 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {
+    public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {
         return customerRepository.findById(id)
                 .map(customer -> {
                     customer.setName(customerDetails.getName());
                     customer.setEmail(customerDetails.getEmail());
-                    customerRepository.save(customer);
-                    return ResponseEntity.ok("Customer updated successfully.");
-                }).orElse(ResponseEntity.ok("Customer not found with ID: " + id));
+                    Customer updatedCustomer = customerRepository.save(customer);
+                    CustomerResponse response = new CustomerResponse("Customer updated successfully. Customer ID:" +updatedCustomer.getId());
+                    return ResponseEntity.ok(response);
+                }).orElse(ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id)));
     }
 
     @DeleteMapping("/{id}")
