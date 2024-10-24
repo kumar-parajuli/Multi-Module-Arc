@@ -28,15 +28,16 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-// Create a product
-@PostMapping
-public ResponseEntity<ProductResponse> createProduct(@RequestBody Product product) {
-    Product savedProduct = productRepository.save(product);
-    String message = "Product created successfully. Product ID: " + savedProduct.getId();
-    ProductResponse response = new ProductResponse(message, savedProduct);
-    return ResponseEntity.ok(response);
-}
-    //Get product by id
+    // Create a Single product
+    @PostMapping
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody Product product) {
+        Product savedProduct = productRepository.save(product);
+        String message = "Product created successfully. Product ID: " + savedProduct.getId();
+        ProductResponse response = new ProductResponse(message, savedProduct);
+        return ResponseEntity.ok(response);
+    }
+
+    //Get a single product by id
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         return productRepository.findById(id)
@@ -56,10 +57,11 @@ public ResponseEntity<ProductResponse> createProduct(@RequestBody Product produc
                     Product updatedProduct = productRepository.save(product);
 
                     // Create a response with the updated product
-                    ProductResponse response = new ProductResponse("Product updated successfully. Product ID: " + updatedProduct.getId(),updatedProduct);
+                    ProductResponse response = new ProductResponse("Product updated successfully. Product ID: " + updatedProduct.getId(), updatedProduct);
                     return ResponseEntity.ok(response);
                 }).orElse(ResponseEntity.ok(new ProductResponse("Product not found with ID: " + id)));
     }
+
     // Delete a product
     @DeleteMapping("/{id}")
     public ResponseEntity<ProductResponse> deleteProduct(@PathVariable Long id) {

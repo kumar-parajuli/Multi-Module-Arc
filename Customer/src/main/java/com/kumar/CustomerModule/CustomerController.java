@@ -13,6 +13,7 @@ public class CustomerController {
     @Autowired
     private CustomerRepository customerRepository;
 
+    //Get the all Customer
     @GetMapping
     public ResponseEntity<CustomerResponse> getAllCustomer() {
         List<Customer> customers = customerRepository.findAll();
@@ -26,6 +27,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    //Add new costumer
     @PostMapping
     public ResponseEntity<CustomerResponse> createCustomer(@RequestBody Customer customer) {
         Customer savedCustomer = customerRepository.save(customer);
@@ -34,6 +36,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    //Get the single customer by id
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
         return customerRepository.findById(id)
@@ -45,6 +48,7 @@ public class CustomerController {
                 .orElse(ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id)));
     }
 
+    // To update the customer details
     @PutMapping("/{id}")
     public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {
         return customerRepository.findById(id)
@@ -62,7 +66,7 @@ public class CustomerController {
                     return ResponseEntity.ok(response);
                 }).orElse(ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id)));
     }
-
+    //To delete the customer By ID
     @DeleteMapping("/{id}")
     public ResponseEntity<CustomerResponse> deleteCustomer(@PathVariable Long id) {
         if (customerRepository.existsById(id)) {
