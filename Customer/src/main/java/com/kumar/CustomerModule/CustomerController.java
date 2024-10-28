@@ -62,7 +62,6 @@ public class CustomerController {
 
                     // Create response with the updated customer details
                     CustomerResponse response = new CustomerResponse("Customer updated successfully. Customer ID: " + updatedCustomer.getId(), updatedCustomer);
-
                     return ResponseEntity.ok(response);
                 }).orElse(ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id)));
     }
