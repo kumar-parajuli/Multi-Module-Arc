@@ -69,12 +69,13 @@ public class CustomerController {
     //To delete the customer By ID
     @DeleteMapping("/{id}")
     public ResponseEntity<CustomerResponse> deleteCustomer(@PathVariable Long id) {
-        if (customerRepository.existsById(id)) {
+        return customerRepository.findById(id).map(customer ->{
+            //Delete the order
             customerRepository.deleteById(id);
-            // Return a response with a success message
-            return ResponseEntity.ok(new CustomerResponse("Customer deleted successfully. ID: " + id));
-        }
-        // Return a response with a not found message
-        return ResponseEntity.ok(new CustomerResponse("Customer not found with ID: " + id));
+            //Return success message along with deleted Customer details
+            CustomerResponse response=new CustomerResponse("Customer deleted successfully. ID: " + id,customer);
+            return ResponseEntity.ok(response);
+        })
+                .orElse(ResponseEntity.ok(new CustomerResponse("Customer not found with ID:" +id)));
     }
 }

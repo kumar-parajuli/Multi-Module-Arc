@@ -39,10 +39,13 @@ public class ProductController {
 
     //Get a single product by id
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return productRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(product -> {
+                    ProductResponse response= new ProductResponse("Product retrieved successfully.", product);
+                return  ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.ok(new ProductResponse("Product  not found with ID: " + id)));
     }
 
     // Update a product
@@ -68,9 +71,8 @@ public class ProductController {
         return productRepository.findById(id)
                 .map(product -> {
                     // Store product details before deletion
-                    Product deletedProduct = product;
                     productRepository.deleteById(id);
-                    ProductResponse response = new ProductResponse("Product deleted successfully. ID: " + id, deletedProduct);
+                    ProductResponse response = new ProductResponse("Product deleted successfully. ID: " + id, product);
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.ok(new ProductResponse("Product not found with ID: " + id)));

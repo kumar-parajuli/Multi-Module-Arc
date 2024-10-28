@@ -71,12 +71,10 @@ public class OrderController {
     public ResponseEntity<OrderResponse> deleteOrder(@PathVariable Long id) {
         return orderRepository.findById(id)
                 .map(order -> {
-                    // Store order details before deletion
-                    Orders deletedOrder = order;
                     // Delete the order
                     orderRepository.deleteById(id);
                     // Return success message along with deleted order details
-                    OrderResponse response = new OrderResponse("Order deleted successfully. ID: " + id, deletedOrder);
+                    OrderResponse response = new OrderResponse("Order deleted successfully. ID: " + id, order);
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.ok(new OrderResponse("Order not found with ID: " + id)));
